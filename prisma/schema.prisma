@@ -1,0 +1,80 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id           String        @id @default(cuid())
+  name         String
+  email        String        @unique
+  password     String
+  avatarUrl    String?
+  createdAt    DateTime      @default(now())
+  coupleId     String?
+  couple       Couple?       @relation(fields: [coupleId], references: [id])
+  transactions Transaction[]
+  sessions     Session[]
+}
+
+model Session {
+  id        String   @id @default(cuid())
+  userId    String
+  token     String   @unique
+  expiresAt DateTime
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Couple {
+  id           String        @id @default(cuid())
+  inviteCode   String        @unique @default(cuid())
+  createdAt    DateTime      @default(now())
+  members      User[]
+  categories   Category[]
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+model Category {
+  id           String        @id @default(cuid())
+  name         String
+  icon         String
+  color        String
+  isDefault    Boolean       @default(false)
+  coupleId     String
+  couple       Couple        @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  transactions Transaction[]
+  budgets      Budget[]
+}
+
+model Transaction {
+  id          String   @id @default(cuid())
+  type        String
+  amount      Float
+  description String
+  date        DateTime
+  isRecurring Boolean  @default(false)
+  splitRatio  Float?
+  coupleId    String
+  userId      String
+  categoryId  String
+  couple      Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  user        User     @relation(fields: [userId], references: [id])
+  category    Category @relation(fields: [categoryId], references: [id])
+  createdAt   DateTime @default(now())
+}
+
+model Budget {
+  id          String   @id @default(cuid())
+  month       String
+  limitAmount Float
+  coupleId    String
+  categoryId  String
+  couple      Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  category    Category @relation(fields: [categoryId], references: [id])
+
+  @@unique([coupleId, categoryId, month])
+}
