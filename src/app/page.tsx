@@ -59,9 +59,6 @@ export default function LandingPage() {
                 <Button size="lg" asChild>
                   <Link href="/register">Começar grátis →</Link>
                 </Button>
-                <Button size="lg" variant="outline" asChild>
-                  <Link href="/login">Ver demonstração</Link>
-                </Button>
               </div>
             </div>
 
@@ -163,7 +160,13 @@ export default function LandingPage() {
             <Heart className="h-4 w-4 text-indigo-500" />
             <span className="font-medium text-gray-700">PairPocket</span>
           </div>
-          <p>© {new Date().getFullYear()} PairPocket. Feito com carinho para casais organizados.</p>
+          <p>© 2024 PairPocket. Feito com carinho para casais organizados.</p>
+          <p className="mt-1">
+            Desenvolvido por{" "}
+            <a href="https://github.com/arthurhrc" target="_blank" rel="noopener noreferrer" className="text-indigo-500 hover:text-indigo-400 transition-colors">
+              Arthur Carvalho
+            </a>
+          </p>
         </div>
       </footer>
     </div>
