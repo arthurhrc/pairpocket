@@ -26,6 +26,9 @@ model Session {
   token     String   @unique
   expiresAt DateTime
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([expiresAt])
+  @@index([userId])
 }
 
 model Couple {
@@ -48,6 +51,8 @@ model Category {
   couple       Couple        @relation(fields: [coupleId], references: [id], onDelete: Cascade)
   transactions Transaction[]
   budgets      Budget[]
+
+  @@index([coupleId])
 }
 
 model Transaction {
@@ -65,6 +70,10 @@ model Transaction {
   user        User     @relation(fields: [userId], references: [id])
   category    Category @relation(fields: [categoryId], references: [id])
   createdAt   DateTime @default(now())
+
+  @@index([coupleId])
+  @@index([coupleId, date])
+  @@index([userId])
 }
 
 model Budget {
@@ -77,4 +86,6 @@ model Budget {
   category    Category @relation(fields: [categoryId], references: [id])
 
   @@unique([coupleId, categoryId, month])
+  @@index([coupleId])
+  @@index([coupleId, month])
 }
