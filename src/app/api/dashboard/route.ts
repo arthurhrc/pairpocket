@@ -63,7 +63,7 @@ function getCurrentMonth() {
 }
 
 async function getMonthlyData(coupleId: string, year: number, currentMonth: number) {
-  const months = [];
+  const months: { year: number; month: number }[] = [];
   for (let i = 5; i >= 0; i--) {
     let m = currentMonth - i;
     let y = year;
@@ -71,20 +71,25 @@ async function getMonthlyData(coupleId: string, year: number, currentMonth: numb
     months.push({ year: y, month: m });
   }
 
-  const results = await Promise.all(
-    months.map(async ({ year: y, month: mo }) => {
-      const start = new Date(y, mo - 1, 1);
-      const end = new Date(y, mo, 1);
-      const txs = await prisma.transaction.findMany({
-        where: { coupleId, date: { gte: start, lt: end } },
-        select: { type: true, amount: true },
-      });
-      const income = txs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
-      const expense = txs.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
-      const label = new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(new Date(y, mo - 1));
-      return { month: `${y}-${String(mo).padStart(2, "0")}`, label, income, expense };
-    })
-  );
+  const oldest = months[0];
+  const rangeStart = new Date(oldest.year, oldest.month - 1, 1);
+  const rangeEnd = new Date(year, currentMonth, 1);
 
-  return results;
+  const allTxs = await prisma.transaction.findMany({
+    where: { coupleId, date: { gte: rangeStart, lt: rangeEnd } },
+    select: { type: true, amount: true, date: true },
+  });
+
+  return months.map(({ year: y, month: mo }) => {
+    const start = new Date(y, mo - 1, 1).getTime();
+    const end = new Date(y, mo, 1).getTime();
+    const txs = allTxs.filter((t) => {
+      const d = new Date(t.date).getTime();
+      return d >= start && d < end;
+    });
+    const income = txs.filter((t) => t.type === "income").reduce((s, t) => s + t.amount, 0);
+    const expense = txs.filter((t) => t.type === "expense").reduce((s, t) => s + t.amount, 0);
+    const label = new Intl.DateTimeFormat("pt-BR", { month: "short" }).format(new Date(y, mo - 1));
+    return { month: `${y}-${String(mo).padStart(2, "0")}`, label, income, expense };
+  });
 }
