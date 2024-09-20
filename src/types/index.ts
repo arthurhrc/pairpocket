@@ -1,5 +1,13 @@
 export type TransactionType = "income" | "expense";
 
+export interface Category {
+  id: string;
+  name: string;
+  icon: string;
+  color: string;
+  isDefault: boolean;
+}
+
 export interface UserSession {
   id: string;
   name: string;

@@ -34,3 +34,23 @@ export function getMonthLabel(month: string): string {
 export function generateInviteCode(): string {
   return Math.random().toString(36).substring(2, 8).toUpperCase();
 }
+
+export function getInitials(name: string): string {
+  return name
+    .split(" ")
+    .map((n) => n[0])
+    .slice(0, 2)
+    .join("")
+    .toUpperCase();
+}
+
+export function calculateTotal(
+  transactions: { type: string; amount: number }[],
+  type: TransactionType
+): number {
+  return transactions
+    .filter((t) => t.type === type)
+    .reduce((sum, t) => sum + t.amount, 0);
+}
+
+type TransactionType = "income" | "expense";
