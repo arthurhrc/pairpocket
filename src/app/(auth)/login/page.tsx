@@ -12,7 +12,7 @@ import { Label } from "@/components/ui/label";
 
 const schema = z.object({
   email: z.string().email("E-mail inválido"),
-  password: z.string().min(1, "Senha obrigatória"),
+  password: z.string().min(6, "A senha deve ter ao menos 6 caracteres"),
 });
 
 type FormData = z.infer<typeof schema>;
@@ -81,7 +81,7 @@ export default function LoginPage() {
         </div>
 
         {error && (
-          <div className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
+          <div role="alert" className="rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">
             {error}
           </div>
         )}
