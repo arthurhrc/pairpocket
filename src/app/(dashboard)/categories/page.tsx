@@ -8,13 +8,14 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-
-interface Category { id: string; name: string; icon: string; color: string; isDefault: boolean }
+import { useToast } from "@/components/ui/toaster";
+import type { Category } from "@/types";
 
 const ICON_OPTIONS = ["🏠", "🛒", "🚗", "💊", "🎬", "📚", "💡", "👕", "🐾", "📦", "🎮", "✈️", "💰", "🍕", "🎁", "💪", "🏋️", "🎵"];
 const COLOR_OPTIONS = ["#6366f1", "#f59e0b", "#3b82f6", "#10b981", "#ec4899", "#8b5cf6", "#06b6d4", "#f97316", "#84cc16", "#22c55e", "#ef4444", "#6b7280"];
 
 export default function CategoriesPage() {
+  const { toast } = useToast();
   const [categories, setCategories] = useState<Category[]>([]);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState("📦");
@@ -36,6 +37,9 @@ export default function CategoriesPage() {
       setCategories((prev) => [...prev, newCat]);
       reset();
       setDialogOpen(false);
+      toast({ title: "Categoria criada!", variant: "success" });
+    } else {
+      toast({ title: "Erro ao criar categoria", variant: "destructive" });
     }
   }
 

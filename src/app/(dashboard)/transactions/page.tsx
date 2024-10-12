@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback } from "react";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, Trash2, AlertTriangle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -10,25 +10,25 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency, formatDate, getCurrentMonth } from "@/lib/utils";
-import type { TransactionWithRelations } from "@/types";
+import { useToast } from "@/components/ui/toaster";
+import type { TransactionWithRelations, Category } from "@/types";
 
 const schema = z.object({
   type: z.enum(["income", "expense"]),
-  amount: z.string().min(1),
-  description: z.string().min(2),
-  date: z.string().min(1),
-  categoryId: z.string().min(1),
+  amount: z.string().refine((v) => parseFloat(v) > 0, { message: "Valor deve ser positivo" }),
+  description: z.string().min(2, "Mínimo 2 caracteres").max(500),
+  date: z.string().min(1, "Data obrigatória"),
+  categoryId: z.string().min(1, "Selecione uma categoria"),
   isRecurring: z.boolean().optional(),
 });
 
 type FormData = z.infer<typeof schema>;
 
-interface Category { id: string; name: string; icon: string; color: string }
-
 export default function TransactionsPage() {
+  const { toast } = useToast();
   const [transactions, setTransactions] = useState<TransactionWithRelations[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [month, setMonth] = useState(getCurrentMonth());
@@ -37,7 +37,7 @@ export default function TransactionsPage() {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
-  const [deleteId, setDeleteId] = useState<string | null>(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -73,20 +73,22 @@ export default function TransactionsPage() {
       reset({ type: "expense", date: new Date().toISOString().split("T")[0] });
       setDialogOpen(false);
       loadTransactions();
+      toast({ title: "Transação salva!", variant: "success" });
     }
     setSubmitting(false);
   }
 
-  async function handleDelete(id: string) {
-    setDeleteId(id);
-    await fetch(`/api/transactions/${id}`, { method: "DELETE" });
-    setDeleteId(null);
+  async function confirmDelete() {
+    if (!confirmDeleteId) return;
+    await fetch(`/api/transactions/${confirmDeleteId}`, { method: "DELETE" });
+    setConfirmDeleteId(null);
     loadTransactions();
+    toast({ title: "Transação excluída", variant: "default" });
   }
 
-  const filteredCategories = categories.filter((c) =>
-    txType === "income" ? c.name === "Salário" || c.color === "#22c55e" : c.name !== "Salário"
-  );
+  const incomeCategories = categories.filter((c) => c.color === "#22c55e");
+  const expenseCategories = categories.filter((c) => c.color !== "#22c55e");
+  const filteredCategories = txType === "income" ? incomeCategories : expenseCategories;
 
   return (
     <div className="space-y-6">
@@ -114,7 +116,7 @@ export default function TransactionsPage() {
               <div className="space-y-1.5">
                 <Label>Valor (R$)</Label>
                 <Input type="number" step="0.01" placeholder="0,00" {...register("amount")} />
-                {errors.amount && <p className="text-xs text-red-500">Valor obrigatório</p>}
+                {errors.amount && <p className="text-xs text-red-500">{errors.amount.message}</p>}
               </div>
               <div className="space-y-1.5">
                 <Label>Descrição</Label>
@@ -209,8 +211,8 @@ export default function TransactionsPage() {
                       {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount)}
                     </span>
                     <button
-                      onClick={() => handleDelete(tx.id)}
-                      disabled={deleteId === tx.id}
+                      onClick={() => setConfirmDeleteId(tx.id)}
+                      aria-label={`Excluir transação ${tx.description}`}
                       className="text-gray-300 hover:text-red-400 transition-colors"
                     >
                       <Trash2 className="h-4 w-4" />
@@ -222,6 +224,25 @@ export default function TransactionsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Delete confirmation dialog */}
+      <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
+        <DialogContent className="max-w-sm">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-red-500" />
+              Confirmar exclusão
+            </DialogTitle>
+            <DialogDescription>
+              Esta ação não pode ser desfeita. A transação será removida permanentemente.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex gap-3 justify-end mt-2">
+            <Button variant="outline" onClick={() => setConfirmDeleteId(null)}>Cancelar</Button>
+            <Button variant="destructive" onClick={confirmDelete}>Excluir</Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
