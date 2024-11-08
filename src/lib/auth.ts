@@ -11,7 +11,13 @@ export async function getSession() {
     include: { user: { include: { couple: true } } },
   });
 
-  if (!session || session.expiresAt < new Date()) return null;
+  if (!session) return null;
+
+  if (session.expiresAt < new Date()) {
+    await prisma.session.delete({ where: { id: session.id } }).catch(() => {});
+    return null;
+  }
+
   return session;
 }
 
@@ -22,5 +28,7 @@ export async function requireAuth() {
 }
 
 export function createSessionToken(): string {
-  return crypto.randomUUID() + "-" + Date.now();
+  const bytes = new Uint8Array(32);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(16).padStart(2, "0")).join("");
 }

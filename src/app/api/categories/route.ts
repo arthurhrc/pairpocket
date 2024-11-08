@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from "next/server";
+import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+
+const postSchema = z.object({
+  name: z.string().min(1).max(50),
+  icon: z.string().min(1).max(8),
+  color: z.string().regex(/^#[0-9a-fA-F]{6}$/),
+});
 
 export async function GET() {
   const session = await getSession();
@@ -20,8 +27,10 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   if (!session.user.coupleId) return NextResponse.json({ error: "Sem casal" }, { status: 404 });
 
-  const { name, icon, color } = await req.json();
-  if (!name || !icon || !color) return NextResponse.json({ error: "Dados incompletos" }, { status: 400 });
+  const body = await req.json();
+  const parsed = postSchema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+  const { name, icon, color } = parsed.data;
 
   const category = await prisma.category.create({
     data: { name, icon, color, coupleId: session.user.coupleId },
