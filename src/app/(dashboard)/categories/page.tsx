@@ -20,6 +20,7 @@ export default function CategoriesPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [selectedIcon, setSelectedIcon] = useState("📦");
   const [selectedColor, setSelectedColor] = useState("#6366f1");
+  const [submitting, setSubmitting] = useState(false);
   const { register, handleSubmit, reset, formState: { errors } } = useForm<{ name: string }>();
 
   useEffect(() => {
@@ -27,6 +28,7 @@ export default function CategoriesPage() {
   }, []);
 
   async function onSubmit({ name }: { name: string }) {
+    setSubmitting(true);
     const res = await fetch("/api/categories", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
@@ -36,11 +38,14 @@ export default function CategoriesPage() {
       const newCat = await res.json();
       setCategories((prev) => [...prev, newCat]);
       reset();
+      setSelectedIcon("📦");
+      setSelectedColor("#6366f1");
       setDialogOpen(false);
       toast({ title: "Categoria criada!", variant: "success" });
     } else {
       toast({ title: "Erro ao criar categoria", variant: "destructive" });
     }
+    setSubmitting(false);
   }
 
   return (
@@ -64,12 +69,14 @@ export default function CategoriesPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Ícone</Label>
-                <div className="grid grid-cols-9 gap-1.5">
+                <div className="grid grid-cols-9 gap-1.5" role="group" aria-label="Selecionar ícone">
                   {ICON_OPTIONS.map((icon) => (
                     <button
                       key={icon}
                       type="button"
                       onClick={() => setSelectedIcon(icon)}
+                      aria-label={`Ícone ${icon}`}
+                      aria-pressed={selectedIcon === icon}
                       className={`rounded-lg p-1.5 text-lg transition-colors ${selectedIcon === icon ? "bg-indigo-100 ring-2 ring-indigo-500" : "hover:bg-gray-100"}`}
                     >{icon}</button>
                   ))}
@@ -77,19 +84,23 @@ export default function CategoriesPage() {
               </div>
               <div className="space-y-1.5">
                 <Label>Cor</Label>
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap gap-2" role="group" aria-label="Selecionar cor">
                   {COLOR_OPTIONS.map((color) => (
                     <button
                       key={color}
                       type="button"
                       onClick={() => setSelectedColor(color)}
+                      aria-label={`Cor ${color}`}
+                      aria-pressed={selectedColor === color}
                       className={`h-8 w-8 rounded-full transition-transform hover:scale-110 ${selectedColor === color ? "ring-2 ring-offset-2 ring-gray-400 scale-110" : ""}`}
                       style={{ backgroundColor: color }}
                     />
                   ))}
                 </div>
               </div>
-              <Button type="submit" className="w-full">Criar categoria</Button>
+              <Button type="submit" className="w-full" disabled={submitting}>
+                {submitting ? "Criando..." : "Criar categoria"}
+              </Button>
             </form>
           </DialogContent>
         </Dialog>

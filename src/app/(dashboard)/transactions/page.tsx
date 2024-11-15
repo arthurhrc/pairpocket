@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useMemo } from "react";
 import { Plus, Trash2, AlertTriangle } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
@@ -83,12 +83,12 @@ export default function TransactionsPage() {
     await fetch(`/api/transactions/${confirmDeleteId}`, { method: "DELETE" });
     setConfirmDeleteId(null);
     loadTransactions();
-    toast({ title: "Transação excluída", variant: "default" });
+    toast({ title: "Transação excluída", variant: "success" });
   }
 
-  const incomeCategories = categories.filter((c) => c.color === "#22c55e");
-  const expenseCategories = categories.filter((c) => c.color !== "#22c55e");
-  const filteredCategories = txType === "income" ? incomeCategories : expenseCategories;
+  const incomeCategories = useMemo(() => categories.filter((c) => c.color === "#22c55e"), [categories]);
+  const expenseCategories = useMemo(() => categories.filter((c) => c.color !== "#22c55e"), [categories]);
+  const filteredCategories = useMemo(() => txType === "income" ? incomeCategories : expenseCategories, [txType, incomeCategories, expenseCategories]);
 
   return (
     <div className="space-y-6">
@@ -103,12 +103,14 @@ export default function TransactionsPage() {
               <DialogTitle>Nova transação</DialogTitle>
             </DialogHeader>
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-2" role="group" aria-label="Tipo de transação">
                 <button type="button" onClick={() => setValue("type", "expense")}
+                  aria-pressed={txType === "expense"}
                   className={`rounded-lg border-2 p-3 text-sm font-medium transition-colors ${txType === "expense" ? "border-red-500 bg-red-50 text-red-700" : "border-gray-200 text-gray-600"}`}>
                   📉 Despesa
                 </button>
                 <button type="button" onClick={() => setValue("type", "income")}
+                  aria-pressed={txType === "income"}
                   className={`rounded-lg border-2 p-3 text-sm font-medium transition-colors ${txType === "income" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600"}`}>
                   📈 Receita
                 </button>
