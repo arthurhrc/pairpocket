@@ -39,6 +39,7 @@ model Couple {
   categories   Category[]
   transactions Transaction[]
   budgets      Budget[]
+  goals        Goal[]
 }
 
 model Category {
@@ -52,6 +53,7 @@ model Category {
   transactions Transaction[]
   budgets      Budget[]
 
+  @@unique([coupleId, name])
   @@index([coupleId])
 }
 
@@ -88,4 +90,16 @@ model Budget {
   @@unique([coupleId, categoryId, month])
   @@index([coupleId])
   @@index([coupleId, month])
+}
+
+model Goal {
+  id            String   @id @default(cuid())
+  month         String
+  targetAmount  Float
+  coupleId      String
+  couple        Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
+  createdAt     DateTime @default(now())
+
+  @@unique([coupleId, month])
+  @@index([coupleId])
 }
