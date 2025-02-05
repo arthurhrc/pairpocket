@@ -11,6 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { formatCurrency, getCurrentMonth, getMonthLabel } from "@/lib/utils";
 
 function getMotivation(progress: number) {
+  if (progress < 0) return { emoji: "⚠️", text: "Saldo negativo este mês. Hora de revisar os gastos!" };
   if (progress >= 100) return { emoji: "🎉", text: "Meta atingida! Parabéns, vocês arrasaram!" };
   if (progress >= 80) return { emoji: "🏆", text: "Quase lá! Estão indo muito bem juntos!" };
   if (progress >= 50) return { emoji: "💪", text: "Na metade do caminho. Continue assim!" };
@@ -23,25 +24,34 @@ export default function GoalsPage() {
   const [goal, setGoal] = useState<number | null>(null);
   const [inputGoal, setInputGoal] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
   const month = getCurrentMonth();
 
   useEffect(() => {
     fetch(`/api/dashboard?month=${month}`).then((r) => r.json()).then(setDashboardData);
-    const stored = localStorage.getItem(`goal-${month}`);
-    if (stored) setGoal(parseFloat(stored));
+    fetch(`/api/goals?month=${month}`)
+      .then((r) => r.json())
+      .then((data) => { if (data?.targetAmount) setGoal(data.targetAmount); });
   }, [month]);
 
-  function saveGoal() {
+  async function saveGoal() {
     const value = parseFloat(inputGoal);
-    if (!isNaN(value) && value > 0) {
+    if (isNaN(value) || value <= 0) return;
+    setSaving(true);
+    const res = await fetch("/api/goals", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ targetAmount: value, month }),
+    });
+    if (res.ok) {
       setGoal(value);
-      localStorage.setItem(`goal-${month}`, String(value));
       setDialogOpen(false);
       setInputGoal("");
     }
+    setSaving(false);
   }
 
-  const savings = dashboardData ? Math.max(0, dashboardData.balance) : 0;
+  const savings = dashboardData?.balance ?? 0;
   const progress = goal ? Math.min(100, (savings / goal) * 100) : 0;
   const motivation = getMotivation(progress);
 
@@ -67,15 +77,21 @@ export default function GoalsPage() {
                 <DialogHeader><DialogTitle>Definir meta de economia</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label>Quanto vocês querem guardar este mês?</Label>
+                    <Label htmlFor="goal-input">Quanto vocês querem guardar este mês?</Label>
                     <Input
+                      id="goal-input"
                       type="number"
+                      min="0"
+                      step="0.01"
                       placeholder="Ex: 1000"
                       value={inputGoal}
                       onChange={(e) => setInputGoal(e.target.value)}
+                      autoFocus
                     />
                   </div>
-                  <Button className="w-full" onClick={saveGoal}>Salvar meta</Button>
+                  <Button className="w-full" onClick={saveGoal} disabled={saving}>
+                    {saving ? "Salvando..." : "Salvar meta"}
+                  </Button>
                 </div>
               </DialogContent>
             </Dialog>
@@ -94,10 +110,10 @@ export default function GoalsPage() {
                   <span className="font-semibold text-gray-900">{formatCurrency(savings)} de {formatCurrency(goal)}</span>
                 </div>
                 <Progress
-                  value={progress}
+                  value={Math.max(0, progress)}
                   indicatorClassName={progress >= 100 ? "bg-green-500" : progress >= 50 ? "bg-indigo-500" : "bg-amber-500"}
                 />
-                <p className="text-right text-xs text-gray-400">{progress.toFixed(0)}%</p>
+                <p className="text-right text-xs text-gray-400">{Math.max(0, progress).toFixed(0)}%</p>
               </div>
               <div className="grid grid-cols-3 gap-4 pt-2">
                 <div className="text-center rounded-xl bg-green-50 p-3">
