@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Plus, Trash2, AlertTriangle } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, ArrowLeftRight } from "lucide-react";
+import { Spinner } from "@/components/ui/spinner";
+import { EmptyState } from "@/components/ui/empty-state";
 import { useForm } from "react-hook-form";
 import { z } from "zod";
 import { zodResolver } from "@hookform/resolvers/zod";
@@ -187,13 +189,14 @@ export default function TransactionsPage() {
         <CardContent>
           {loading ? (
             <div className="flex h-32 items-center justify-center">
-              <div className="h-6 w-6 animate-spin rounded-full border-4 border-indigo-600 border-t-transparent" />
+              <Spinner size="md" />
             </div>
           ) : transactions.length === 0 ? (
-            <div className="py-12 text-center text-gray-400">
-              <p className="text-lg">Nenhuma transação encontrada</p>
-              <p className="text-sm mt-1">Adicione sua primeira transação clicando no botão acima</p>
-            </div>
+            <EmptyState
+              icon={ArrowLeftRight}
+              title="Nenhuma transação encontrada"
+              description="Adicione sua primeira transação clicando no botão acima"
+            />
           ) : (
             <div className="space-y-2">
               {transactions.map((tx) => (
