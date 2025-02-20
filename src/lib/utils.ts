@@ -32,7 +32,9 @@ export function getMonthLabel(month: string): string {
 }
 
 export function generateInviteCode(): string {
-  return Math.random().toString(36).substring(2, 8).toUpperCase();
+  const bytes = new Uint8Array(4);
+  crypto.getRandomValues(bytes);
+  return Array.from(bytes).map((b) => b.toString(36)).join("").toUpperCase().slice(0, 6);
 }
 
 export function getInitials(name: string): string {

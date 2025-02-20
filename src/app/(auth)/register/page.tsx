@@ -41,6 +41,7 @@ export default function RegisterPage() {
 
   const { register, handleSubmit, formState: { errors } } = useForm<RegisterData>({
     resolver: zodResolver(registerSchema),
+    mode: "onBlur",
   });
 
   async function onRegister(data: RegisterData) {
@@ -142,17 +143,15 @@ export default function RegisterPage() {
             <p className="text-xs text-gray-500">Use um código de convite</p>
           </button>
         </div>
-        {coupleAction === "join" && (
-          <div className="mb-4 space-y-1.5">
-            <Label>Código de convite</Label>
-            <Input
-              placeholder="Ex: ABC123"
-              value={joinCode}
-              onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
-              className="tracking-widest text-center text-lg font-bold"
-            />
-          </div>
-        )}
+        <div className={`mb-4 space-y-1.5 overflow-hidden transition-all duration-200 ${coupleAction === "join" ? "max-h-24 opacity-100" : "max-h-0 opacity-0"}`}>
+          <Label>Código de convite</Label>
+          <Input
+            placeholder="Ex: ABC123"
+            value={joinCode}
+            onChange={(e) => setJoinCode(e.target.value.toUpperCase())}
+            className="tracking-widest text-center text-lg font-bold"
+          />
+        </div>
         {error && <div className="mb-4 rounded-lg bg-red-50 px-4 py-3 text-sm text-red-700 border border-red-200">{error}</div>}
         <Button className="w-full" onClick={onCoupleSetup} disabled={loading || (coupleAction === "join" && !joinCode)}>
           {loading ? "Configurando..." : coupleAction === "create" ? "Criar carteira" : "Entrar na carteira"}

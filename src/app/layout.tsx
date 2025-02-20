@@ -11,6 +11,18 @@ const geist = Geist({
 export const metadata: Metadata = {
   title: "PairPocket — Finanças para Casais",
   description: "Controle financeiro compartilhado para casais. Gerencie receitas, despesas e metas juntos.",
+  openGraph: {
+    title: "PairPocket — Finanças para Casais",
+    description: "Controle financeiro compartilhado para casais. Gerencie receitas, despesas e metas juntos.",
+    type: "website",
+    locale: "pt_BR",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: "PairPocket — Finanças para Casais",
+    description: "Controle financeiro compartilhado para casais. Gerencie receitas, despesas e metas juntos.",
+  },
+  robots: { index: true, follow: true },
 };
 
 export default function RootLayout({

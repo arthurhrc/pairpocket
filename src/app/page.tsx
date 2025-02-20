@@ -196,7 +196,7 @@ export default function LandingPage() {
           <p className="mb-8 text-lg text-indigo-100">
             Crie sua conta, convide seu parceiro(a) e comece a controlar as finanças juntos em menos de 2 minutos.
           </p>
-          <Button size="lg" className="border-white bg-white text-indigo-600 hover:bg-indigo-50" asChild>
+          <Button size="lg" className="border-white bg-white text-indigo-700 font-semibold hover:bg-indigo-50" asChild>
             <Link href="/register">Criar conta gratuita →</Link>
           </Button>
         </div>
