@@ -57,7 +57,7 @@ export default function DashboardPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Dashboard</h1>
+          <h1 className="text-xl font-bold text-gray-900 sm:text-2xl">Dashboard</h1>
           <p className="text-sm text-gray-500">{getMonthLabel(month)}</p>
         </div>
         <input
@@ -70,13 +70,13 @@ export default function DashboardPage() {
       </div>
 
       {/* Summary cards */}
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
         <Card className="border-l-4 border-l-green-500">
           <CardContent className="p-5">
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Receitas</p>
-                <p className="text-2xl font-bold text-green-600">{formatCurrency(data.totalIncome)}</p>
+                <p className="text-2xl font-bold text-green-600">{formatCurrency(data.totalIncome ?? 0)}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-green-100">
                 <TrendingUp className="h-6 w-6 text-green-600" />
@@ -90,7 +90,7 @@ export default function DashboardPage() {
             <div className="flex items-center justify-between">
               <div>
                 <p className="text-sm text-gray-500">Despesas</p>
-                <p className="text-2xl font-bold text-red-600">{formatCurrency(data.totalExpense)}</p>
+                <p className="text-2xl font-bold text-red-600">{formatCurrency(data.totalExpense ?? 0)}</p>
               </div>
               <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-red-100">
                 <TrendingDown className="h-6 w-6 text-red-600" />
@@ -105,7 +105,7 @@ export default function DashboardPage() {
               <div>
                 <p className="text-sm text-gray-500">Saldo</p>
                 <p className={`text-2xl font-bold ${balancePositive ? "text-indigo-700" : "text-red-600"}`}>
-                  {formatCurrency(data.balance)}
+                  {formatCurrency(data.balance ?? 0)}
                 </p>
               </div>
               <div className={`flex h-12 w-12 items-center justify-center rounded-xl ${balancePositive ? "bg-indigo-100" : "bg-red-100"}`}>
