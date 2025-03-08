@@ -101,7 +101,7 @@ export default function GoalsPage() {
           {goal ? (
             <>
               <div className="text-center py-4">
-                <p className="text-5xl mb-2">{motivation.emoji}</p>
+                <p className="text-3xl sm:text-5xl mb-2">{motivation.emoji}</p>
                 <p className="text-gray-600">{motivation.text}</p>
               </div>
               <div className="space-y-2">
@@ -115,7 +115,7 @@ export default function GoalsPage() {
                 />
                 <p className="text-right text-xs text-gray-400">{Math.max(0, progress).toFixed(0)}%</p>
               </div>
-              <div className="grid grid-cols-3 gap-4 pt-2">
+              <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3 sm:gap-4">
                 <div className="text-center rounded-xl bg-green-50 p-3">
                   <p className="text-xs text-gray-500">Receitas</p>
                   <p className="font-bold text-green-600 text-sm mt-1">{formatCurrency(dashboardData?.totalIncome ?? 0)}</p>
