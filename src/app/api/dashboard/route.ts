@@ -9,6 +9,9 @@ export async function GET(req: NextRequest) {
 
   const { searchParams } = new URL(req.url);
   const month = searchParams.get("month") || getCurrentMonth();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(month)) {
+    return NextResponse.json({ error: "Mês inválido" }, { status: 400 });
+  }
   const [year, m] = month.split("-").map(Number);
 
   const startDate = new Date(year, m - 1, 1);

@@ -26,7 +26,7 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
 
   const updated = await prisma.category.update({
-    where: { id },
+    where: { id, coupleId: session.user.coupleId },
     data: parsed.data,
   });
 

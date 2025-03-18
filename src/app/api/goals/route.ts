@@ -6,7 +6,7 @@ import { prisma } from "@/lib/prisma";
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 const postSchema = z.object({
-  targetAmount: z.number().positive().finite(),
+  targetAmount: z.number().positive().finite().max(999_999_999),
   month: z.string().regex(MONTH_RE),
 });
 
