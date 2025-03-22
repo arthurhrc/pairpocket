@@ -2,6 +2,8 @@
 
 Sistema de controle financeiro para casais. Gerencie receitas, despesas e metas de economia juntos, de forma simples e transparente.
 
+**Demo em produção:** [pairpocket.vercel.app](https://pairpocket.vercel.app)
+
 ## Features
 
 - **Carteira compartilhada** — saldo unificado do casal com visibilidade individual
@@ -21,24 +23,26 @@ Sistema de controle financeiro para casais. Gerencie receitas, despesas e metas 
 | UI | Tailwind CSS + Radix UI |
 | Gráficos | Recharts |
 | Backend | Next.js Route Handlers |
-| Banco de dados | Prisma + SQLite |
+| Banco de dados | Prisma + PostgreSQL (Neon) |
+| Deploy | Vercel |
 | Testes | Vitest + Testing Library |
 
 ## Rodando localmente
 
 ```bash
 # 1. Clone o repositório
-git clone https://github.com/arthurcarvalho/pairpocket.git
+git clone https://github.com/arthurhrc/pairpocket.git
 cd pairpocket
 
 # 2. Instale as dependências
 yarn install
 
-# 3. Configure o banco de dados
-yarn db:migrate
+# 3. Configure as variáveis de ambiente
+cp .env.example .env
+# Edite .env com sua DATABASE_URL do Neon (neon.tech)
 
-# 4. Popule com dados de demonstração
-yarn db:seed
+# 4. Sincronize o banco de dados
+yarn prisma db push
 
 # 5. Inicie o servidor
 yarn dev
