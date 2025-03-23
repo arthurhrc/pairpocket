@@ -1,12 +1,13 @@
 import Link from "next/link";
 import {
   Heart, Users, LayoutGrid, Target, BarChart3,
-  ArrowLeftRight, FileText, TrendingUp, TrendingDown, Star,
+  ArrowLeftRight, FileText, TrendingUp, TrendingDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent } from "@/components/ui/card";
-import { Avatar, AvatarFallback } from "@/components/ui/avatar";
+import { TestimonialsCarousel } from "@/components/landing/testimonials-carousel";
+
 
 const features = [
   { icon: Users, title: "Carteira Compartilhada", desc: "Um saldo único para o casal, com visibilidade individual de cada um." },
@@ -17,26 +18,6 @@ const features = [
   { icon: FileText, title: "Relatórios Mensais", desc: "Histórico completo com filtros por período e categoria." },
 ];
 
-const testimonials = [
-  {
-    name: "Ana e Pedro",
-    initials: ["A", "P"],
-    role: "Casados há 3 anos",
-    text: "Antes brigávamos todo mês por causa do dinheiro. Com o PairPocket, ficamos na mesma página e até conseguimos guardar para a viagem dos sonhos!",
-  },
-  {
-    name: "Camila e Rafael",
-    initials: ["C", "R"],
-    role: "Morando juntos há 1 ano",
-    text: "O split de despesas foi um divisor de águas. Agora sabemos exatamente quanto cada um deve contribuir, sem mais aquele climinha de 'quem paga o quê'.",
-  },
-  {
-    name: "Júlia e Marcos",
-    initials: ["J", "M"],
-    role: "Noivos se planejando",
-    text: "Estamos guardando para o casamento e as metas do PairPocket nos mantêm motivados. Vemos o progresso crescendo semana a semana.",
-  },
-];
 
 export default function LandingPage() {
   return (
@@ -160,33 +141,7 @@ export default function LandingPage() {
           <div className="mb-12 text-center">
             <h2 className="text-3xl font-bold text-gray-900 md:text-4xl">Casais que transformaram suas finanças</h2>
           </div>
-          <div className="grid gap-6 md:grid-cols-3">
-            {testimonials.map((t) => (
-              <Card key={t.name} className="bg-white">
-                <CardContent className="p-6">
-                  <div className="mb-4 flex gap-1">
-                    {[...Array(5)].map((_, i) => (
-                      <Star key={i} className="h-4 w-4 fill-amber-400 text-amber-400" />
-                    ))}
-                  </div>
-                  <p className="mb-6 text-sm leading-relaxed text-gray-600">"{t.text}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="flex -space-x-2">
-                      {t.initials.map((initial) => (
-                        <Avatar key={initial} className="h-8 w-8 border-2 border-white">
-                          <AvatarFallback className="text-xs">{initial}</AvatarFallback>
-                        </Avatar>
-                      ))}
-                    </div>
-                    <div>
-                      <p className="text-sm font-semibold text-gray-900">{t.name}</p>
-                      <p className="text-xs text-gray-400">{t.role}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
+          <TestimonialsCarousel />
         </div>
       </section>
 
