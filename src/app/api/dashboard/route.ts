@@ -47,6 +47,7 @@ export async function GET(req: NextRequest) {
   })).sort((a, b) => b.total - a.total);
 
   const monthlyData = await getMonthlyData(session.user.coupleId, year, m);
+  const insights = await getSpendingInsights(session.user.coupleId, year, m, totalExpense, byCategory);
 
   const recentTransactions = transactions.slice(0, 5);
 
@@ -57,12 +58,61 @@ export async function GET(req: NextRequest) {
     byCategory,
     monthlyData,
     recentTransactions,
+    insights,
   });
 }
 
 function getCurrentMonth() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+async function getSpendingInsights(
+  coupleId: string,
+  year: number,
+  currentMonth: number,
+  currentExpense: number,
+  byCategory: { categoryId: string; name: string; icon: string; total: number }[]
+) {
+  let prevMonth = currentMonth - 1;
+  let prevYear = year;
+  if (prevMonth <= 0) { prevMonth = 12; prevYear -= 1; }
+
+  const prevStart = new Date(prevYear, prevMonth - 1, 1);
+  const prevEnd = new Date(prevYear, prevMonth, 1);
+
+  const prevTxs = await prisma.transaction.findMany({
+    where: { coupleId, date: { gte: prevStart, lt: prevEnd }, type: "expense" },
+    select: { categoryId: true, amount: true },
+  });
+
+  const prevExpense = prevTxs.reduce((s, t) => s + t.amount, 0);
+  const prevCategoryMap: Record<string, number> = {};
+  for (const tx of prevTxs) {
+    prevCategoryMap[tx.categoryId] = (prevCategoryMap[tx.categoryId] ?? 0) + tx.amount;
+  }
+
+  const expenseDiff = prevExpense > 0 ? ((currentExpense - prevExpense) / prevExpense) * 100 : null;
+
+  const topCategory = byCategory[0] ?? null;
+  const topCategoryPrevAmount = topCategory ? (prevCategoryMap[topCategory.categoryId] ?? 0) : 0;
+  const topCategoryDiff =
+    topCategory && topCategoryPrevAmount > 0
+      ? ((topCategory.total - topCategoryPrevAmount) / topCategoryPrevAmount) * 100
+      : null;
+
+  return {
+    expenseDiff: expenseDiff !== null ? Math.round(expenseDiff) : null,
+    prevMonthExpense: prevExpense,
+    topCategory: topCategory
+      ? {
+          name: topCategory.name,
+          icon: topCategory.icon,
+          total: topCategory.total,
+          diff: topCategoryDiff !== null ? Math.round(topCategoryDiff) : null,
+        }
+      : null,
+  };
 }
 
 async function getMonthlyData(coupleId: string, year: number, currentMonth: number) {

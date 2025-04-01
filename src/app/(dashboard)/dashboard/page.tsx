@@ -6,8 +6,15 @@ import { Spinner } from "@/components/ui/spinner";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ExpensePieChart, MonthlyBarChart } from "@/components/dashboard/charts";
+import { FinancialInsights } from "@/components/dashboard/financial-insights";
 import { formatCurrency, formatDate, getCurrentMonth, getMonthLabel } from "@/lib/utils";
 import type { CategorySummary, MonthlyData, TransactionWithRelations } from "@/types";
+
+interface SpendingInsights {
+  expenseDiff: number | null;
+  prevMonthExpense: number;
+  topCategory: { name: string; icon: string; total: number; diff: number | null } | null;
+}
 
 interface DashboardData {
   totalIncome: number;
@@ -16,6 +23,7 @@ interface DashboardData {
   byCategory: CategorySummary[];
   monthlyData: MonthlyData[];
   recentTransactions: TransactionWithRelations[];
+  insights: SpendingInsights;
 }
 
 export default function DashboardPage() {
@@ -136,6 +144,9 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Financial insights */}
+      {data.insights && <FinancialInsights insights={data.insights} />}
 
       {/* Recent transactions */}
       <Card>
