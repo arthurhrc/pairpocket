@@ -42,11 +42,13 @@ export interface DashboardStats {
 
 export interface CategorySummary {
   categoryId: string;
-  categoryName: string;
+  name: string;
   color: string;
   icon: string;
   total: number;
   percentage: number;
+  monthlyAvg?: number;
+  isOverspending?: boolean;
 }
 
 export interface MonthlyData {

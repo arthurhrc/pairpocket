@@ -37,8 +37,13 @@ export function ExpensePieChart({ data }: { data: CategorySummary[] }) {
         {data.map((entry, i) => (
           <div key={i} className="flex items-center gap-1.5 text-xs text-gray-600">
             <span className="h-2.5 w-2.5 shrink-0 rounded-full" style={{ backgroundColor: entry.color }} />
-            <span>{entry.categoryName}</span>
+            <span>{entry.name}</span>
             <span className="text-gray-400">{entry.percentage.toFixed(0)}%</span>
+            {entry.isOverspending && (
+              <span className="rounded-full bg-red-100 px-1.5 py-0.5 text-[10px] font-semibold text-red-600">
+                acima da média
+              </span>
+            )}
           </div>
         ))}
       </div>

@@ -40,11 +40,19 @@ export async function GET(req: NextRequest) {
     categoryMap[tx.categoryId].total += tx.amount;
   }
 
-  const byCategory = Object.entries(categoryMap).map(([id, data]) => ({
-    categoryId: id,
-    ...data,
-    percentage: totalExpense > 0 ? (data.total / totalExpense) * 100 : 0,
-  })).sort((a, b) => b.total - a.total);
+  const categoryAverages = await getCategoryAverages(session.user.coupleId, year, m);
+
+  const byCategory = Object.entries(categoryMap).map(([id, data]) => {
+    const avg = categoryAverages[id] ?? 0;
+    const isOverspending = avg > 0 && data.total > avg * 1.2;
+    return {
+      categoryId: id,
+      ...data,
+      percentage: totalExpense > 0 ? (data.total / totalExpense) * 100 : 0,
+      monthlyAvg: avg,
+      isOverspending,
+    };
+  }).sort((a, b) => b.total - a.total);
 
   const monthlyData = await getMonthlyData(session.user.coupleId, year, m);
   const insights = await getSpendingInsights(session.user.coupleId, year, m, totalExpense, byCategory);
@@ -65,6 +73,34 @@ export async function GET(req: NextRequest) {
 function getCurrentMonth() {
   const now = new Date();
   return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
+async function getCategoryAverages(coupleId: string, year: number, currentMonth: number) {
+  const months: { year: number; month: number }[] = [];
+  for (let i = 3; i >= 1; i--) {
+    let mo = currentMonth - i;
+    let y = year;
+    if (mo <= 0) { mo += 12; y -= 1; }
+    months.push({ year: y, month: mo });
+  }
+  const oldest = months[0];
+  const rangeStart = new Date(oldest.year, oldest.month - 1, 1);
+  const rangeEnd = new Date(year, currentMonth - 1, 1);
+
+  const txs = await prisma.transaction.findMany({
+    where: { coupleId, date: { gte: rangeStart, lt: rangeEnd }, type: "expense" },
+    select: { categoryId: true, amount: true },
+  });
+
+  const totals: Record<string, number> = {};
+  for (const tx of txs) {
+    totals[tx.categoryId] = (totals[tx.categoryId] ?? 0) + tx.amount;
+  }
+  const result: Record<string, number> = {};
+  for (const [id, total] of Object.entries(totals)) {
+    result[id] = total / 3;
+  }
+  return result;
 }
 
 async function getSpendingInsights(
