@@ -4,6 +4,7 @@ import bcrypt from "bcryptjs";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 import { createSessionToken } from "@/lib/auth";
+import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 const schema = z.object({
   email: z.string().email(),
@@ -11,6 +12,14 @@ const schema = z.object({
 });
 
 export async function POST(req: NextRequest) {
+  const { allowed, retryAfter } = rateLimit(getRateLimitKey(req, "login"), 5, 60_000);
+  if (!allowed) {
+    return NextResponse.json(
+      { error: "Muitas tentativas. Tente novamente em instantes." },
+      { status: 429, headers: { "Retry-After": String(retryAfter) } }
+    );
+  }
+
   try {
     const body = await req.json();
     const parsed = schema.safeParse(body);
