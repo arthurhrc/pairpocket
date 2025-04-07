@@ -22,6 +22,7 @@ function getMotivation(progress: number) {
 export default function GoalsPage() {
   const [dashboardData, setDashboardData] = useState<{ totalIncome: number; totalExpense: number; balance: number } | null>(null);
   const [goal, setGoal] = useState<number | null>(null);
+  const [forecast, setForecast] = useState<{ avgMonthlySaving: number; trend: "up" | "down" | "neutral" } | null>(null);
   const [inputGoal, setInputGoal] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -31,7 +32,10 @@ export default function GoalsPage() {
     fetch(`/api/dashboard?month=${month}`).then((r) => r.json()).then(setDashboardData);
     fetch(`/api/goals?month=${month}`)
       .then((r) => r.json())
-      .then((data) => { if (data?.targetAmount) setGoal(data.targetAmount); });
+      .then((data) => {
+        if (data?.targetAmount) setGoal(data.targetAmount);
+        if (data?.forecast) setForecast(data.forecast);
+      });
   }, [month]);
 
   async function saveGoal() {
@@ -115,6 +119,26 @@ export default function GoalsPage() {
                 />
                 <p className="text-right text-xs text-gray-400">{Math.max(0, progress).toFixed(0)}%</p>
               </div>
+              {forecast && forecast.avgMonthlySaving > 0 && (
+                <div className="rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3">
+                  <p className="text-sm text-indigo-800">
+                    {forecast.trend === "up" && "📈 "}
+                    {forecast.trend === "down" && "📉 "}
+                    {forecast.trend === "neutral" && "📊 "}
+                    Com base nos últimos 3 meses, vocês economizam em média{" "}
+                    <span className="font-semibold">{formatCurrency(forecast.avgMonthlySaving)}/mês</span>.
+                    {goal && goal > 0 && forecast.avgMonthlySaving > 0 && (
+                      <>
+                        {" "}
+                        {forecast.avgMonthlySaving >= goal
+                          ? "Nesse ritmo, a meta está ao alcance!"
+                          : `Para atingir a meta, aumentem a economia em ${formatCurrency(goal - forecast.avgMonthlySaving)}/mês.`}
+                      </>
+                    )}
+                  </p>
+                </div>
+              )}
+
               <div className="grid grid-cols-1 gap-2 pt-2 sm:grid-cols-3 sm:gap-4">
                 <div className="text-center rounded-xl bg-green-50 p-3">
                   <p className="text-xs text-gray-500">Receitas</p>
