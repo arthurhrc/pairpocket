@@ -13,12 +13,11 @@ const patchSchema = z.object({
 export async function DELETE(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  if (!session.user.coupleId) return NextResponse.json({ error: "Sem casal" }, { status: 403 });
 
   const { id } = await params;
-  const tx = await prisma.transaction.findUnique({ where: { id } });
-  if (!tx || tx.coupleId !== session.user.coupleId) {
-    return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
-  }
+  const tx = await prisma.transaction.findUnique({ where: { id, coupleId: session.user.coupleId } });
+  if (!tx) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
 
   await prisma.transaction.delete({ where: { id } });
   return NextResponse.json({ ok: true });
@@ -27,12 +26,12 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<{ i
 export async function PATCH(req: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   const session = await getSession();
   if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
+  if (!session.user.coupleId) return NextResponse.json({ error: "Sem casal" }, { status: 403 });
 
   const { id } = await params;
-  const tx = await prisma.transaction.findUnique({ where: { id } });
-  if (!tx || tx.coupleId !== session.user.coupleId) {
-    return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
-  }
+  const tx = await prisma.transaction.findUnique({ where: { id, coupleId: session.user.coupleId } });
+  if (!tx) return NextResponse.json({ error: "Não encontrado" }, { status: 404 });
+
 
   const body = await req.json();
   const parsed = patchSchema.safeParse(body);
