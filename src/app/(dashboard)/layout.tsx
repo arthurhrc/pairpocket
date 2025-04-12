@@ -8,6 +8,7 @@ import {
 } from "lucide-react";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import { CoupleOnboarding } from "@/components/onboarding/couple-onboarding";
 import { cn, getInitials } from "@/lib/utils";
 import type { UserSession } from "@/types";
 
@@ -23,6 +24,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
   const pathname = usePathname();
   const [user, setUser] = useState<UserSession | null>(null);
   const [mobileOpen, setMobileOpen] = useState(false);
+  const [showOnboarding, setShowOnboarding] = useState(false);
 
   useEffect(() => {
     fetch("/api/auth/me")
@@ -30,8 +32,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
       .then((data) => {
         if (!data) { router.push("/login"); return; }
         setUser(data);
+        if (!data.coupleId) setShowOnboarding(true);
       });
   }, [router]);
+
+  function handleOnboardingComplete() {
+    setShowOnboarding(false);
+    fetch("/api/auth/me").then((r) => r.json()).then(setUser);
+  }
 
   async function handleLogout() {
     await fetch("/api/auth/logout", { method: "POST" });
@@ -123,7 +131,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           </button>
         </header>
 
-        <main className="flex-1 overflow-auto p-4 md:p-8">{children}</main>
+        <main className="flex-1 overflow-auto p-4 md:p-8">
+          {showOnboarding ? (
+            <CoupleOnboarding onComplete={handleOnboardingComplete} />
+          ) : (
+            children
+          )}
+        </main>
       </div>
     </div>
   );
