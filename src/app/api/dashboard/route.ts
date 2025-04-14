@@ -137,9 +137,21 @@ async function getSpendingInsights(
       ? ((topCategory.total - topCategoryPrevAmount) / topCategoryPrevAmount) * 100
       : null;
 
+  const prevIncomeTxs = await prisma.transaction.findMany({
+    where: { coupleId, date: { gte: prevStart, lt: prevEnd }, type: "income" },
+    select: { amount: true },
+  });
+  const prevTotalIncome = prevIncomeTxs.reduce((s: number, t: { amount: number }) => s + t.amount, 0);
+  const incomeDiff =
+    prevTotalIncome > 0 && currentExpense !== undefined
+      ? Math.round(((currentExpense - prevExpense) / prevExpense) * 100)
+      : null;
+
   return {
     expenseDiff: expenseDiff !== null ? Math.round(expenseDiff) : null,
     prevMonthExpense: prevExpense,
+    prevMonthIncome: prevTotalIncome,
+    incomeDiff,
     topCategory: topCategory
       ? {
           name: topCategory.name,

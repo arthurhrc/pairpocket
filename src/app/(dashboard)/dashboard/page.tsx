@@ -8,12 +8,14 @@ import { Badge } from "@/components/ui/badge";
 import { ExpensePieChart, MonthlyBarChart } from "@/components/dashboard/charts";
 import { FinancialInsights } from "@/components/dashboard/financial-insights";
 import { HealthScoreCard, computeHealthScore } from "@/components/dashboard/health-score";
+import { MoMComparison } from "@/components/dashboard/mom-comparison";
 import { formatCurrency, formatDate, getCurrentMonth, getMonthLabel } from "@/lib/utils";
 import type { CategorySummary, MonthlyData, TransactionWithRelations } from "@/types";
 
 interface SpendingInsights {
   expenseDiff: number | null;
   prevMonthExpense: number;
+  prevMonthIncome: number;
   topCategory: { name: string; icon: string; total: number; diff: number | null } | null;
 }
 
@@ -145,6 +147,19 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
       </div>
+
+      {/* Month-over-month comparison */}
+      {data.insights && (
+        <MoMComparison
+          data={{
+            currentIncome: data.totalIncome,
+            currentExpense: data.totalExpense,
+            prevMonthIncome: data.insights.prevMonthIncome ?? 0,
+            prevMonthExpense: data.insights.prevMonthExpense,
+            expenseDiff: data.insights.expenseDiff,
+          }}
+        />
+      )}
 
       {/* Financial health score */}
       {(() => {
