@@ -2,15 +2,16 @@ import { NextRequest, NextResponse } from "next/server";
 import { z } from "zod";
 import { getSession } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
+import { readBodyWithLimit, sanitizeString, PayloadTooLargeError } from "@/lib/sanitize";
 
 const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 
 const postSchema = z.object({
   type: z.enum(["income", "expense"]),
-  amount: z.number().positive().finite(),
-  description: z.string().min(2).max(500),
-  date: z.string().min(1),
-  categoryId: z.string().min(1),
+  amount: z.number().positive().finite().max(999_999_999),
+  description: z.string().min(2).max(200).transform(sanitizeString),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  categoryId: z.string().uuid(),
   isRecurring: z.boolean().optional(),
   splitRatio: z.number().min(0).max(1).nullable().optional(),
 });
@@ -57,7 +58,16 @@ export async function POST(req: NextRequest) {
   if (!session) return NextResponse.json({ error: "Não autenticado" }, { status: 401 });
   if (!session.user.coupleId) return NextResponse.json({ error: "Sem casal" }, { status: 404 });
 
-  const body = await req.json();
+  let body: unknown;
+  try {
+    body = await readBodyWithLimit(req);
+  } catch (e) {
+    if (e instanceof PayloadTooLargeError) {
+      return NextResponse.json({ error: "Requisição muito grande" }, { status: 413 });
+    }
+    return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
+  }
+
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) {
     return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });

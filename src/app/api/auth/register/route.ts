@@ -7,9 +7,9 @@ import { createSessionToken } from "@/lib/auth";
 import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 const schema = z.object({
-  name: z.string().min(2),
-  email: z.string().email(),
-  password: z.string().min(6),
+  name: z.string().min(2).max(100),
+  email: z.string().email().max(254).toLowerCase(),
+  password: z.string().min(6).max(128),
 });
 
 export async function POST(req: NextRequest) {
