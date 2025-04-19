@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Plus, Trash2, AlertTriangle, ArrowLeftRight } from "lucide-react";
+import { Plus, Trash2, AlertTriangle, ArrowLeftRight, Download } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useForm } from "react-hook-form";
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, DialogDescription } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectGroup, SelectItem, SelectLabel, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { formatCurrency, formatDate, getCurrentMonth } from "@/lib/utils";
+import { exportTransactionsToCSV } from "@/lib/export";
 import { useToast } from "@/components/ui/toaster";
 import type { TransactionWithRelations, Category } from "@/types";
 
@@ -96,6 +97,10 @@ export default function TransactionsPage() {
     <div className="space-y-6">
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Transações</h1>
+        <div className="flex gap-2">
+          <Button variant="outline" size="sm" onClick={() => exportTransactionsToCSV(transactions, month)} disabled={transactions.length === 0}>
+            <Download className="h-4 w-4 mr-1" /> Exportar CSV
+          </Button>
         <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
           <DialogTrigger asChild>
             <Button><Plus className="h-4 w-4 mr-1" /> Nova transação</Button>
@@ -158,6 +163,7 @@ export default function TransactionsPage() {
             </form>
           </DialogContent>
         </Dialog>
+        </div>
       </div>
 
       {/* Filters */}
