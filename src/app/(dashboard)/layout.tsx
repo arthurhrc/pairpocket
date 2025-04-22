@@ -9,6 +9,7 @@ import {
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { CoupleOnboarding } from "@/components/onboarding/couple-onboarding";
+import { NotificationsBell } from "@/components/dashboard/notifications-bell";
 import { cn, getInitials } from "@/lib/utils";
 import type { UserSession } from "@/types";
 
@@ -122,13 +123,16 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
             <Heart className="h-5 w-5 text-indigo-600" />
             <span className="font-bold text-gray-900">PairPocket</span>
           </div>
-          <button
-            onClick={() => setMobileOpen(!mobileOpen)}
-            aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
-            aria-expanded={mobileOpen}
-          >
-            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </button>
+          <div className="flex items-center gap-1">
+            <NotificationsBell />
+            <button
+              onClick={() => setMobileOpen(!mobileOpen)}
+              aria-label={mobileOpen ? "Fechar menu" : "Abrir menu"}
+              aria-expanded={mobileOpen}
+            >
+              {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+            </button>
+          </div>
         </header>
 
         <main className="flex-1 overflow-auto p-4 md:p-8">
