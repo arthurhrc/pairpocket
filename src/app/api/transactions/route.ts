@@ -26,6 +26,10 @@ export async function GET(req: NextRequest) {
   const type = searchParams.get("type");
   const categoryId = searchParams.get("categoryId");
 
+  const pageParam = searchParams.get("page");
+  const page = pageParam !== null && /^\d+$/.test(pageParam) ? parseInt(pageParam, 10) : 0;
+  const PAGE_SIZE = 50;
+
   const where: Record<string, unknown> = { coupleId: session.user.coupleId };
 
   if (month) {
@@ -41,16 +45,27 @@ export async function GET(req: NextRequest) {
   if (type && (type === "income" || type === "expense")) where.type = type;
   if (categoryId) where.categoryId = categoryId;
 
-  const transactions = await prisma.transaction.findMany({
-    where,
-    include: {
-      user: { select: { id: true, name: true } },
-      category: { select: { id: true, name: true, icon: true, color: true } },
-    },
-    orderBy: { date: "desc" },
-  });
+  const [transactions, total] = await prisma.$transaction([
+    prisma.transaction.findMany({
+      where,
+      include: {
+        user: { select: { id: true, name: true } },
+        category: { select: { id: true, name: true, icon: true, color: true } },
+      },
+      orderBy: { date: "desc" },
+      take: PAGE_SIZE,
+      skip: page * PAGE_SIZE,
+    }),
+    prisma.transaction.count({ where }),
+  ]);
 
-  return NextResponse.json(transactions);
+  return NextResponse.json({
+    data: transactions,
+    total,
+    page,
+    pageSize: PAGE_SIZE,
+    hasMore: (page + 1) * PAGE_SIZE < total,
+  });
 }
 
 export async function POST(req: NextRequest) {

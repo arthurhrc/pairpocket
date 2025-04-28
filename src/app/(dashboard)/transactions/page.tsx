@@ -33,11 +33,14 @@ type FormData = z.infer<typeof schema>;
 export default function TransactionsPage() {
   const { toast } = useToast();
   const [transactions, setTransactions] = useState<TransactionWithRelations[]>([]);
+  const [hasMore, setHasMore] = useState(false);
+  const [page, setPage] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [month, setMonth] = useState(getCurrentMonth());
   const [filterType, setFilterType] = useState("all");
   const [filterCategory, setFilterCategory] = useState("all");
   const [loading, setLoading] = useState(true);
+  const [loadingMore, setLoadingMore] = useState(false);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
@@ -49,15 +52,24 @@ export default function TransactionsPage() {
 
   const txType = watch("type");
 
-  const loadTransactions = useCallback(async () => {
-    setLoading(true);
-    const params = new URLSearchParams({ month });
+  const loadTransactions = useCallback(async (resetPage = true) => {
+    const currentPage = resetPage ? 0 : page;
+    if (resetPage) { setLoading(true); setPage(0); }
+    else setLoadingMore(true);
+
+    const params = new URLSearchParams({ month, page: String(currentPage) });
     if (filterType !== "all") params.set("type", filterType);
     if (filterCategory !== "all") params.set("categoryId", filterCategory);
     const res = await fetch(`/api/transactions?${params}`);
-    if (res.ok) setTransactions(await res.json());
-    setLoading(false);
-  }, [month, filterType, filterCategory]);
+    if (res.ok) {
+      const json = await res.json();
+      setTransactions((prev) => resetPage ? json.data : [...prev, ...json.data]);
+      setHasMore(json.hasMore);
+      if (!resetPage) setPage(currentPage + 1);
+    }
+    if (resetPage) setLoading(false);
+    else setLoadingMore(false);
+  }, [month, filterType, filterCategory, page]);
 
   useEffect(() => {
     fetch("/api/categories").then((r) => r.json()).then(setCategories);
@@ -210,19 +222,19 @@ export default function TransactionsPage() {
             />
           ) : (
             <div className="space-y-2">
-              {transactions.map((tx) => (
+              {transactions.map((tx: TransactionWithRelations) => (
                 <div key={tx.id} className={`flex items-center justify-between rounded-xl border-l-4 px-4 py-3 ${tx.type === "income" ? "border-l-green-500 bg-green-50/30" : "border-l-red-500 bg-red-50/30"}`}>
-                  <div className="flex items-center gap-3">
-                    <span className="text-xl">{tx.category.icon}</span>
-                    <div>
+                  <div className="flex items-center gap-3 min-w-0">
+                    <span className="text-xl shrink-0">{tx.category.icon}</span>
+                    <div className="min-w-0">
                       <div className="flex items-center gap-2">
-                        <p className="text-sm font-medium text-gray-900">{tx.description}</p>
-                        {tx.isRecurring && <Badge variant="secondary" className="text-xs">🔄 Recorrente</Badge>}
+                        <p className="text-sm font-medium text-gray-900 truncate">{tx.description}</p>
+                        {tx.isRecurring && <Badge variant="secondary" className="text-xs shrink-0">🔄 Recorrente</Badge>}
                       </div>
                       <p className="text-xs text-gray-400">{tx.category.name} • {formatDate(tx.date)} • {tx.user.name}</p>
                     </div>
                   </div>
-                  <div className="flex items-center gap-3">
+                  <div className="flex items-center gap-3 shrink-0">
                     <span className={`font-semibold ${tx.type === "income" ? "text-green-600" : "text-red-600"}`}>
                       {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount)}
                     </span>
@@ -236,6 +248,13 @@ export default function TransactionsPage() {
                   </div>
                 </div>
               ))}
+              {hasMore && (
+                <div className="pt-2 text-center">
+                  <Button variant="outline" size="sm" onClick={() => loadTransactions(false)} disabled={loadingMore}>
+                    {loadingMore ? "Carregando..." : "Carregar mais"}
+                  </Button>
+                </div>
+              )}
             </div>
           )}
         </CardContent>
