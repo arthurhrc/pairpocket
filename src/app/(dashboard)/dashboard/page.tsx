@@ -9,6 +9,7 @@ import { ExpensePieChart, MonthlyBarChart } from "@/components/dashboard/charts"
 import { FinancialInsights } from "@/components/dashboard/financial-insights";
 import { HealthScoreCard, computeHealthScore } from "@/components/dashboard/health-score";
 import { MoMComparison } from "@/components/dashboard/mom-comparison";
+import { EmptyDashboard } from "@/components/dashboard/empty-dashboard";
 import { formatCurrency, formatDate, getCurrentMonth, getMonthLabel } from "@/lib/utils";
 import type { CategorySummary, MonthlyData, TransactionWithRelations } from "@/types";
 
@@ -34,6 +35,7 @@ export default function DashboardPage() {
   const [month, setMonth] = useState(getCurrentMonth());
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [quickAddOpen, setQuickAddOpen] = useState(false);
 
   useEffect(() => {
     setLoading(true);
@@ -79,6 +81,11 @@ export default function DashboardPage() {
           className="rounded-lg border border-gray-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"
         />
       </div>
+
+      {/* Empty state for new users */}
+      {data.totalIncome === 0 && data.totalExpense === 0 && data.recentTransactions.length === 0 && (
+        <EmptyDashboard onAddTransaction={() => setQuickAddOpen(true)} />
+      )}
 
       {/* Summary cards */}
       <div className="grid grid-cols-1 gap-3 sm:grid-cols-3">
