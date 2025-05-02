@@ -10,6 +10,7 @@ import { FinancialInsights } from "@/components/dashboard/financial-insights";
 import { HealthScoreCard, computeHealthScore } from "@/components/dashboard/health-score";
 import { MoMComparison } from "@/components/dashboard/mom-comparison";
 import { EmptyDashboard } from "@/components/dashboard/empty-dashboard";
+import { QuickAddTransactionDialog } from "@/components/transactions/quick-add-dialog";
 import { formatCurrency, formatDate, getCurrentMonth, getMonthLabel } from "@/lib/utils";
 import type { CategorySummary, MonthlyData, TransactionWithRelations } from "@/types";
 
@@ -211,6 +212,25 @@ export default function DashboardPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Floating quick-add button */}
+      <button
+        onClick={() => setQuickAddOpen(true)}
+        aria-label="Adicionar transação"
+        className="fixed bottom-6 right-6 z-30 flex h-14 w-14 items-center justify-center rounded-full bg-indigo-600 text-white shadow-lg hover:bg-indigo-700 transition-colors md:bottom-8 md:right-8"
+      >
+        <span className="text-2xl leading-none">+</span>
+      </button>
+
+      <QuickAddTransactionDialog
+        open={quickAddOpen}
+        onOpenChange={setQuickAddOpen}
+        onSuccess={() => {
+          fetch(`/api/dashboard?month=${month}`)
+            .then((r) => r.json())
+            .then(setData);
+        }}
+      />
     </div>
   );
 }
