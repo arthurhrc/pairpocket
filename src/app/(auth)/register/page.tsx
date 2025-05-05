@@ -128,6 +128,8 @@ export default function RegisterPage() {
         <div className="mb-6 grid grid-cols-2 gap-3">
           <button
             onClick={() => setCoupleAction("create")}
+            aria-pressed={coupleAction === "create"}
+            aria-label="Criar nova carteira compartilhada"
             className={`rounded-xl border-2 p-4 text-left transition-colors ${coupleAction === "create" ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-gray-300"}`}
           >
             <p className="text-2xl mb-1">🏠</p>
@@ -136,6 +138,8 @@ export default function RegisterPage() {
           </button>
           <button
             onClick={() => setCoupleAction("join")}
+            aria-pressed={coupleAction === "join"}
+            aria-label="Entrar em carteira existente com código de convite"
             className={`rounded-xl border-2 p-4 text-left transition-colors ${coupleAction === "join" ? "border-indigo-500 bg-indigo-50" : "border-gray-200 hover:border-gray-300"}`}
           >
             <p className="text-2xl mb-1">🔗</p>

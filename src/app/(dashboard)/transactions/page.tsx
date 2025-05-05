@@ -124,12 +124,12 @@ export default function TransactionsPage() {
             <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
               <div className="grid grid-cols-2 gap-2" role="group" aria-label="Tipo de transação">
                 <button type="button" onClick={() => setValue("type", "expense")}
-                  aria-pressed={txType === "expense"}
+                  aria-pressed={txType === "expense"} aria-label="Despesa"
                   className={`rounded-lg border-2 p-3 text-sm font-medium transition-colors ${txType === "expense" ? "border-red-500 bg-red-50 text-red-700" : "border-gray-200 text-gray-600"}`}>
                   📉 Despesa
                 </button>
                 <button type="button" onClick={() => setValue("type", "income")}
-                  aria-pressed={txType === "income"}
+                  aria-pressed={txType === "income"} aria-label="Receita"
                   className={`rounded-lg border-2 p-3 text-sm font-medium transition-colors ${txType === "income" ? "border-green-500 bg-green-50 text-green-700" : "border-gray-200 text-gray-600"}`}>
                   📈 Receita
                 </button>

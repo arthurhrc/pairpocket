@@ -51,7 +51,7 @@ export function NotificationsBell() {
         <div className="absolute right-0 top-11 z-50 w-80 rounded-xl border border-gray-100 bg-white shadow-lg">
           <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
             <span className="text-sm font-semibold text-gray-900">Notificações</span>
-            <button onClick={() => setOpen(false)} className="text-gray-400 hover:text-gray-600">
+            <button onClick={() => setOpen(false)} aria-label="Fechar notificações" className="text-gray-400 hover:text-gray-600">
               <X className="h-4 w-4" />
             </button>
           </div>
@@ -66,7 +66,7 @@ export function NotificationsBell() {
                     <p className="text-sm font-medium text-gray-900">{n.title}</p>
                     <p className="text-xs text-gray-500 mt-0.5">{n.message}</p>
                   </div>
-                  <button onClick={() => dismiss(n.id)} className="text-gray-300 hover:text-gray-500 shrink-0">
+                  <button onClick={() => dismiss(n.id)} aria-label="Dispensar notificação" className="text-gray-300 hover:text-gray-500 shrink-0">
                     <X className="h-3.5 w-3.5" />
                   </button>
                 </li>
