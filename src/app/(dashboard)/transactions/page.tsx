@@ -104,6 +104,7 @@ export default function TransactionsPage() {
   const incomeCategories = useMemo(() => categories.filter((c) => c.color === "#22c55e"), [categories]);
   const expenseCategories = useMemo(() => categories.filter((c) => c.color !== "#22c55e"), [categories]);
   const filteredCategories = useMemo(() => txType === "income" ? incomeCategories : expenseCategories, [txType, incomeCategories, expenseCategories]);
+  const txToDelete = transactions.find((t) => t.id === confirmDeleteId) ?? null;
 
   return (
     <div className="space-y-6">
@@ -269,7 +270,9 @@ export default function TransactionsPage() {
               Confirmar exclusão
             </DialogTitle>
             <DialogDescription>
-              Esta ação não pode ser desfeita. A transação será removida permanentemente.
+              {txToDelete
+                ? `Excluir "${txToDelete.description}" — ${formatCurrency(txToDelete.amount)}? Esta ação não pode ser desfeita.`
+                : "Esta ação não pode ser desfeita. A transação será removida permanentemente."}
             </DialogDescription>
           </DialogHeader>
           <div className="flex gap-3 justify-end mt-2">

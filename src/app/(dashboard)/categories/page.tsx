@@ -95,6 +95,8 @@ export default function CategoriesPage() {
     setDeleteId(null);
   }
 
+  const catToDelete = categories.find((c) => c.id === deleteId) ?? null;
+
   return (
     <div className="space-y-6">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -244,7 +246,9 @@ export default function CategoriesPage() {
               Confirmar exclusão
             </DialogTitle>
             <DialogDescription>
-              Esta ação não pode ser desfeita. A categoria será removida permanentemente.
+              {catToDelete
+                ? `Excluir a categoria "${catToDelete.icon} ${catToDelete.name}"? Esta ação não pode ser desfeita.`
+                : "Esta ação não pode ser desfeita. A categoria será removida permanentemente."}
             </DialogDescription>
           </DialogHeader>
           <div className="flex justify-end gap-3 mt-2">
