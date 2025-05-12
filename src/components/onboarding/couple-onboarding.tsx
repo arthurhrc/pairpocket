@@ -198,16 +198,31 @@ export function CoupleOnboarding({ onComplete }: Props) {
         {/* Step: done */}
         {step === "done" && (
           <Card>
-            <CardContent className="py-10 text-center space-y-4">
-              <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
-                <Check className="h-8 w-8 text-green-600" />
-              </div>
-              <div>
+            <CardContent className="py-8 space-y-6">
+              <div className="text-center space-y-2">
+                <div className="mx-auto flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+                  <Check className="h-8 w-8 text-green-600" />
+                </div>
                 <p className="text-lg font-bold text-gray-900">Tudo pronto!</p>
-                <p className="mt-1 text-sm text-gray-500">
-                  Sua carteira compartilhada está configurada. Comecem a registrar as finanças juntos!
+                <p className="text-sm text-gray-500">
+                  Vocês estão conectados. Aqui estão os próximos passos:
                 </p>
               </div>
+              <ul className="space-y-3">
+                {[
+                  { icon: "💸", title: "Registre sua primeira transação", desc: "Anote uma despesa ou receita recente." },
+                  { icon: "🎯", title: "Defina uma meta financeira", desc: "Ex: viagem, reserva de emergência." },
+                  { icon: "📊", title: "Explore o dashboard", desc: "Veja gráficos e insights em tempo real." },
+                ].map((item) => (
+                  <li key={item.title} className="flex items-start gap-3 rounded-lg border border-gray-100 bg-gray-50 px-4 py-3">
+                    <span className="text-xl shrink-0">{item.icon}</span>
+                    <div>
+                      <p className="text-sm font-semibold text-gray-800">{item.title}</p>
+                      <p className="text-xs text-gray-500">{item.desc}</p>
+                    </div>
+                  </li>
+                ))}
+              </ul>
               <Button className="w-full" onClick={onComplete}>
                 Ir para o dashboard <ArrowRight className="ml-2 h-4 w-4" />
               </Button>
