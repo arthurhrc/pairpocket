@@ -9,6 +9,7 @@ import { ExpensePieChart, MonthlyBarChart } from "@/components/dashboard/charts"
 import { FinancialInsights } from "@/components/dashboard/financial-insights";
 import { HealthScoreCard, computeHealthScore } from "@/components/dashboard/health-score";
 import { MoMComparison } from "@/components/dashboard/mom-comparison";
+import { PartnerBreakdown } from "@/components/dashboard/partner-breakdown";
 import { EmptyDashboard } from "@/components/dashboard/empty-dashboard";
 import { QuickAddTransactionDialog } from "@/components/transactions/quick-add-dialog";
 import { formatCurrency, formatDate, getCurrentMonth, getMonthLabel } from "@/lib/utils";
@@ -21,11 +22,19 @@ interface SpendingInsights {
   topCategory: { name: string; icon: string; total: number; diff: number | null } | null;
 }
 
+interface PartnerData {
+  userId: string;
+  name: string;
+  expense: number;
+  income: number;
+}
+
 interface DashboardData {
   totalIncome: number;
   totalExpense: number;
   balance: number;
   byCategory: CategorySummary[];
+  byPartner: PartnerData[];
   monthlyData: MonthlyData[];
   recentTransactions: TransactionWithRelations[];
   insights: SpendingInsights;
@@ -167,6 +176,11 @@ export default function DashboardPage() {
             expenseDiff: data.insights.expenseDiff,
           }}
         />
+      )}
+
+      {/* Partner spending breakdown */}
+      {data.byPartner && data.byPartner.length > 1 && (
+        <PartnerBreakdown data={data.byPartner} />
       )}
 
       {/* Financial health score */}

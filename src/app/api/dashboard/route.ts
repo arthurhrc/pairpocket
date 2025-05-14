@@ -59,11 +59,20 @@ export async function GET(req: NextRequest) {
 
   const recentTransactions = transactions.slice(0, 5);
 
+  const partnerMap: Record<string, { name: string; expense: number; income: number }> = {};
+  for (const tx of transactions) {
+    if (!partnerMap[tx.userId]) partnerMap[tx.userId] = { name: tx.user.name, expense: 0, income: 0 };
+    if (tx.type === "expense") partnerMap[tx.userId].expense += tx.amount;
+    else partnerMap[tx.userId].income += tx.amount;
+  }
+  const byPartner = Object.entries(partnerMap).map(([id, d]) => ({ userId: id, ...d }));
+
   return NextResponse.json({
     totalIncome,
     totalExpense,
     balance: totalIncome - totalExpense,
     byCategory,
+    byPartner,
     monthlyData,
     recentTransactions,
     insights,
