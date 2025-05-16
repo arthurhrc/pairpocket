@@ -46,6 +46,7 @@ export default function DashboardPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
   const [quickAddOpen, setQuickAddOpen] = useState(false);
+  const [analyticsOpen, setAnalyticsOpen] = useState(true);
 
   useEffect(() => {
     setLoading(true);
@@ -144,50 +145,62 @@ export default function DashboardPage() {
         </Card>
       </div>
 
-      {/* Charts */}
-      <div className="grid gap-6 lg:grid-cols-2">
-        <Card>
-          <CardHeader>
-            <CardTitle>Despesas por categoria</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <ExpensePieChart data={data.byCategory} />
-          </CardContent>
-        </Card>
+      {/* Analytics section — collapsible */}
+      <div>
+        <button
+          onClick={() => setAnalyticsOpen((v) => !v)}
+          className="flex w-full items-center justify-between rounded-xl border border-gray-200 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-100 transition-colors"
+          aria-expanded={analyticsOpen}
+        >
+          <span>Análises e gráficos</span>
+          <span className="text-gray-400">{analyticsOpen ? "▲" : "▼"}</span>
+        </button>
 
-        <Card>
-          <CardHeader>
-            <CardTitle>Últimos 6 meses</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <MonthlyBarChart data={data.monthlyData} />
-          </CardContent>
-        </Card>
+        {analyticsOpen && (
+          <div className="mt-4 space-y-6">
+            <div className="grid gap-6 lg:grid-cols-2">
+              <Card>
+                <CardHeader>
+                  <CardTitle>Despesas por categoria</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ExpensePieChart data={data.byCategory} />
+                </CardContent>
+              </Card>
+
+              <Card>
+                <CardHeader>
+                  <CardTitle>Últimos 6 meses</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <MonthlyBarChart data={data.monthlyData} />
+                </CardContent>
+              </Card>
+            </div>
+
+            {data.insights && (
+              <MoMComparison
+                data={{
+                  currentIncome: data.totalIncome,
+                  currentExpense: data.totalExpense,
+                  prevMonthIncome: data.insights.prevMonthIncome ?? 0,
+                  prevMonthExpense: data.insights.prevMonthExpense,
+                  expenseDiff: data.insights.expenseDiff,
+                }}
+              />
+            )}
+
+            {data.byPartner && data.byPartner.length > 1 && (
+              <PartnerBreakdown data={data.byPartner} />
+            )}
+
+            {(() => {
+              const hs = computeHealthScore(data.totalIncome, data.totalExpense, data.insights?.expenseDiff ?? null);
+              return <HealthScoreCard score={hs.score} label={hs.label} breakdown={hs.breakdown} />;
+            })()}
+          </div>
+        )}
       </div>
-
-      {/* Month-over-month comparison */}
-      {data.insights && (
-        <MoMComparison
-          data={{
-            currentIncome: data.totalIncome,
-            currentExpense: data.totalExpense,
-            prevMonthIncome: data.insights.prevMonthIncome ?? 0,
-            prevMonthExpense: data.insights.prevMonthExpense,
-            expenseDiff: data.insights.expenseDiff,
-          }}
-        />
-      )}
-
-      {/* Partner spending breakdown */}
-      {data.byPartner && data.byPartner.length > 1 && (
-        <PartnerBreakdown data={data.byPartner} />
-      )}
-
-      {/* Financial health score */}
-      {(() => {
-        const hs = computeHealthScore(data.totalIncome, data.totalExpense, data.insights?.expenseDiff ?? null);
-        return <HealthScoreCard score={hs.score} label={hs.label} breakdown={hs.breakdown} />;
-      })()}
 
       {/* Financial insights */}
       {data.insights && <FinancialInsights insights={data.insights} />}
