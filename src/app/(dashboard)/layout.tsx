@@ -79,6 +79,11 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         })}
       </nav>
 
+      <div className="border-b border-gray-100 px-4 pb-3 flex items-center justify-between">
+        <span className="text-xs text-gray-400 font-medium">Notificações</span>
+        <NotificationsBell />
+      </div>
+
       {user && (
         <div className="border-t border-gray-100 p-4">
           <div className="mb-3 flex items-center gap-3">
