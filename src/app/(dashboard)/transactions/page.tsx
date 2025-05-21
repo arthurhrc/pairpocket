@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useCallback, useMemo } from "react";
-import { Plus, Trash2, AlertTriangle, ArrowLeftRight, Download } from "lucide-react";
+import { Plus, Trash2, Pencil, AlertTriangle, ArrowLeftRight, Download } from "lucide-react";
 import { Spinner } from "@/components/ui/spinner";
 import { EmptyState } from "@/components/ui/empty-state";
 import { useForm } from "react-hook-form";
@@ -44,6 +44,12 @@ export default function TransactionsPage() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [confirmDeleteId, setConfirmDeleteId] = useState<string | null>(null);
+  const [editTx, setEditTx] = useState<TransactionWithRelations | null>(null);
+  const [editSubmitting, setEditSubmitting] = useState(false);
+  const [editAmount, setEditAmount] = useState("");
+  const [editDescription, setEditDescription] = useState("");
+  const [editDate, setEditDate] = useState("");
+  const [editCategoryId, setEditCategoryId] = useState("");
 
   const { register, handleSubmit, setValue, watch, reset, formState: { errors } } = useForm<FormData>({
     resolver: zodResolver(schema),
@@ -91,6 +97,38 @@ export default function TransactionsPage() {
       toast({ title: "Transação salva!", variant: "success" });
     }
     setSubmitting(false);
+  }
+
+  function openEdit(tx: TransactionWithRelations) {
+    setEditTx(tx);
+    setEditAmount(String(tx.amount));
+    setEditDescription(tx.description);
+    setEditDate(new Date(tx.date).toISOString().split("T")[0]);
+    setEditCategoryId(tx.categoryId);
+  }
+
+  async function onEditSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
+    if (!editTx) return;
+    setEditSubmitting(true);
+    const res = await fetch(`/api/transactions/${editTx.id}`, {
+      method: "PATCH",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        description: editDescription,
+        amount: parseFloat(editAmount),
+        date: editDate,
+        categoryId: editCategoryId,
+      }),
+    });
+    setEditSubmitting(false);
+    if (res.ok) {
+      setEditTx(null);
+      loadTransactions();
+      toast({ title: "Transação atualizada!", variant: "success" });
+    } else {
+      toast({ title: "Erro ao atualizar transação", variant: "destructive" });
+    }
   }
 
   async function confirmDelete() {
@@ -240,6 +278,13 @@ export default function TransactionsPage() {
                       {tx.type === "income" ? "+" : "-"}{formatCurrency(tx.amount)}
                     </span>
                     <button
+                      onClick={() => openEdit(tx)}
+                      aria-label={`Editar transação ${tx.description}`}
+                      className="text-gray-300 hover:text-indigo-400 transition-colors"
+                    >
+                      <Pencil className="h-4 w-4" />
+                    </button>
+                    <button
                       onClick={() => setConfirmDeleteId(tx.id)}
                       aria-label={`Excluir transação ${tx.description}`}
                       className="text-gray-300 hover:text-red-400 transition-colors"
@@ -260,6 +305,47 @@ export default function TransactionsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Edit transaction dialog */}
+      <Dialog open={!!editTx} onOpenChange={(open) => { if (!open) setEditTx(null); }}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Editar transação</DialogTitle>
+          </DialogHeader>
+          {editTx && (
+            <form onSubmit={onEditSubmit} className="space-y-4">
+              <div className="space-y-1.5">
+                <Label>Valor (R$)</Label>
+                <Input type="number" step="0.01" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} required />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Descrição</Label>
+                <Input value={editDescription} onChange={(e) => setEditDescription(e.target.value)} required />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Data</Label>
+                <Input type="date" value={editDate} onChange={(e) => setEditDate(e.target.value)} required />
+              </div>
+              <div className="space-y-1.5">
+                <Label>Categoria</Label>
+                <Select value={editCategoryId} onValueChange={setEditCategoryId}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectGroup>
+                      {categories.map((c) => (
+                        <SelectItem key={c.id} value={c.id}>{c.icon} {c.name}</SelectItem>
+                      ))}
+                    </SelectGroup>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button type="submit" className="w-full" disabled={editSubmitting}>
+                {editSubmitting ? "Salvando..." : "Salvar alterações"}
+              </Button>
+            </form>
+          )}
+        </DialogContent>
+      </Dialog>
 
       {/* Delete confirmation dialog */}
       <Dialog open={!!confirmDeleteId} onOpenChange={() => setConfirmDeleteId(null)}>
