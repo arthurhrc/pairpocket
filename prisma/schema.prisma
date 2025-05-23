@@ -97,6 +97,8 @@ model Goal {
   id            String   @id @default(cuid())
   month         String
   targetAmount  Float
+  name          String?
+  targetDate    String?
   coupleId      String
   couple        Couple   @relation(fields: [coupleId], references: [id], onDelete: Cascade)
   createdAt     DateTime @default(now())

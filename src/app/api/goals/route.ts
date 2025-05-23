@@ -8,6 +8,8 @@ const MONTH_RE = /^\d{4}-(0[1-9]|1[0-2])$/;
 const postSchema = z.object({
   targetAmount: z.number().positive().finite().max(999_999_999),
   month: z.string().regex(MONTH_RE),
+  name: z.string().min(1).max(100).optional(),
+  targetDate: z.string().regex(MONTH_RE).optional(),
 });
 
 export async function GET(req: NextRequest) {
@@ -86,12 +88,12 @@ export async function POST(req: NextRequest) {
   const body = await req.json();
   const parsed = postSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Dados inválidos" }, { status: 400 });
-  const { targetAmount, month } = parsed.data;
+  const { targetAmount, month, name, targetDate } = parsed.data;
 
   const goal = await prisma.goal.upsert({
     where: { coupleId_month: { coupleId: session.user.coupleId, month } },
-    update: { targetAmount },
-    create: { targetAmount, month, coupleId: session.user.coupleId },
+    update: { targetAmount, ...(name !== undefined && { name }), ...(targetDate !== undefined && { targetDate }) },
+    create: { targetAmount, month, coupleId: session.user.coupleId, name: name ?? null, targetDate: targetDate ?? null },
   });
 
   return NextResponse.json(goal);

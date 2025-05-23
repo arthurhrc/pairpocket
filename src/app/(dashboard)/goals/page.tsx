@@ -22,8 +22,12 @@ function getMotivation(progress: number) {
 export default function GoalsPage() {
   const [dashboardData, setDashboardData] = useState<{ totalIncome: number; totalExpense: number; balance: number } | null>(null);
   const [goal, setGoal] = useState<number | null>(null);
+  const [goalName, setGoalName] = useState("");
+  const [goalTargetDate, setGoalTargetDate] = useState("");
   const [forecast, setForecast] = useState<{ avgMonthlySaving: number; trend: "up" | "down" | "neutral" } | null>(null);
   const [inputGoal, setInputGoal] = useState("");
+  const [inputName, setInputName] = useState("");
+  const [inputTargetDate, setInputTargetDate] = useState("");
   const [dialogOpen, setDialogOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const month = getCurrentMonth();
@@ -34,6 +38,8 @@ export default function GoalsPage() {
       .then((r) => r.json())
       .then((data) => {
         if (data?.targetAmount) setGoal(data.targetAmount);
+        if (data?.name) setGoalName(data.name);
+        if (data?.targetDate) setGoalTargetDate(data.targetDate);
         if (data?.forecast) setForecast(data.forecast);
       });
   }, [month]);
@@ -45,12 +51,21 @@ export default function GoalsPage() {
     const res = await fetch("/api/goals", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ targetAmount: value, month }),
+      body: JSON.stringify({
+        targetAmount: value,
+        month,
+        name: inputName || undefined,
+        targetDate: inputTargetDate || undefined,
+      }),
     });
     if (res.ok) {
       setGoal(value);
+      setGoalName(inputName);
+      setGoalTargetDate(inputTargetDate);
       setDialogOpen(false);
       setInputGoal("");
+      setInputName("");
+      setInputTargetDate("");
     }
     setSaving(false);
   }
@@ -69,7 +84,7 @@ export default function GoalsPage() {
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">
-            <CardTitle>Meta de economia do mês</CardTitle>
+            <CardTitle>{goalName || "Meta de economia do mês"}</CardTitle>
             <Dialog open={dialogOpen} onOpenChange={setDialogOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" size="sm">
@@ -81,7 +96,17 @@ export default function GoalsPage() {
                 <DialogHeader><DialogTitle>Definir meta de economia</DialogTitle></DialogHeader>
                 <div className="space-y-4">
                   <div className="space-y-1.5">
-                    <Label htmlFor="goal-input">Quanto vocês querem guardar este mês?</Label>
+                    <Label htmlFor="goal-name">Nome da meta (opcional)</Label>
+                    <Input
+                      id="goal-name"
+                      placeholder="Ex: Viagem para Europa"
+                      value={inputName}
+                      onChange={(e) => setInputName(e.target.value)}
+                      autoFocus
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="goal-input">Valor alvo (R$)</Label>
                     <Input
                       id="goal-input"
                       type="number"
@@ -90,7 +115,15 @@ export default function GoalsPage() {
                       placeholder="Ex: 1000"
                       value={inputGoal}
                       onChange={(e) => setInputGoal(e.target.value)}
-                      autoFocus
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label htmlFor="goal-target-date">Prazo (mês alvo, opcional)</Label>
+                    <Input
+                      id="goal-target-date"
+                      type="month"
+                      value={inputTargetDate}
+                      onChange={(e) => setInputTargetDate(e.target.value)}
                     />
                   </div>
                   <Button className="w-full" onClick={saveGoal} disabled={saving}>
@@ -119,6 +152,16 @@ export default function GoalsPage() {
                 />
                 <p className="text-right text-xs text-gray-400">{Math.max(0, progress).toFixed(0)}%</p>
               </div>
+              {goalTargetDate && (() => {
+                const [ty, tm] = goalTargetDate.split("-").map(Number);
+                const [cy, cm] = month.split("-").map(Number);
+                const monthsLeft = (ty - cy) * 12 + (tm - cm);
+                return monthsLeft > 0 ? (
+                  <p className="text-xs text-indigo-600 font-medium">🗓️ {monthsLeft} {monthsLeft === 1 ? "mês restante" : "meses restantes"} até {goalTargetDate}</p>
+                ) : monthsLeft === 0 ? (
+                  <p className="text-xs text-amber-600 font-medium">⏰ Último mês para atingir a meta!</p>
+                ) : null;
+              })()}
               {forecast && forecast.avgMonthlySaving > 0 && (
                 <div className="rounded-lg border border-indigo-100 bg-indigo-50 px-4 py-3">
                   <p className="text-sm text-indigo-800">
