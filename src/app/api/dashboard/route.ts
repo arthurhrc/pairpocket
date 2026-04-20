@@ -55,7 +55,7 @@ export async function GET(req: NextRequest) {
   }).sort((a, b) => b.total - a.total);
 
   const monthlyData = await getMonthlyData(session.user.coupleId, year, m);
-  const insights = await getSpendingInsights(session.user.coupleId, year, m, totalExpense, byCategory);
+  const insights = await getSpendingInsights(session.user.coupleId, year, m, totalIncome, totalExpense, byCategory);
 
   const recentTransactions = transactions.slice(0, 5);
 
@@ -107,6 +107,7 @@ async function getSpendingInsights(
   coupleId: string,
   year: number,
   currentMonth: number,
+  currentIncome: number,
   currentExpense: number,
   byCategory: { categoryId: string; name: string; icon: string; total: number }[]
 ) {
@@ -143,8 +144,8 @@ async function getSpendingInsights(
   });
   const prevTotalIncome = prevIncomeTxs.reduce((s: number, t: { amount: number }) => s + t.amount, 0);
   const incomeDiff =
-    prevTotalIncome > 0 && currentExpense !== undefined
-      ? Math.round(((currentExpense - prevExpense) / prevExpense) * 100)
+    prevTotalIncome > 0
+      ? Math.round(((currentIncome - prevTotalIncome) / prevTotalIncome) * 100)
       : null;
 
   return {

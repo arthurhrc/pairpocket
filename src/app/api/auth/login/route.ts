@@ -8,7 +8,7 @@ import { rateLimit, getRateLimitKey } from "@/lib/rate-limit";
 
 const schema = z.object({
   email: z.string().email(),
-  password: z.string().min(1),
+  password: z.string().min(6),
 });
 
 export async function POST(req: NextRequest) {

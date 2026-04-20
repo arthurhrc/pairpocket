@@ -10,7 +10,7 @@ const postSchema = z.object({
   type: z.enum(["income", "expense"]),
   amount: z.number().positive().finite().max(999_999_999),
   description: z.string().min(2).max(200).transform(sanitizeString),
-  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).refine((d) => !isNaN(new Date(d).getTime()), "Data inválida"),
   categoryId: z.string().uuid(),
   isRecurring: z.boolean().optional(),
   splitRatio: z.number().min(0).max(1).nullable().optional(),
@@ -38,7 +38,7 @@ export async function GET(req: NextRequest) {
       lt: new Date(year, m, 1),
     };
   }
-  if (type && type !== "all") where.type = type;
+  if (type && (type === "income" || type === "expense")) where.type = type;
   if (categoryId) where.categoryId = categoryId;
 
   const transactions = await prisma.transaction.findMany({
